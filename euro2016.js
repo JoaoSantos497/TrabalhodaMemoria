@@ -49,6 +49,7 @@ let faces = [
     { code: "PT", img: "images/Portugal.png" }   // Portugal
 ];	
 
+let cartas = [];
 
 window.addEventListener("load", init, false);
 window.addEventListener("keydown", (e) => { if (e.code === "Space") restartGame(); });
@@ -64,7 +65,6 @@ function init() {
 	//game.sounds.background.play(); //Background Music
     scramble(); // Baralhar as cartas
     startTimer(); // Contador de tempo
-	 
 	//completar
 }
 
