@@ -61,9 +61,9 @@ function init() {
 	setupAudio(); 		// configurar o audio
 	getFaces(); 		// calcular as faces e guardar no array faces
 	createCountries();	// criar países
-	game.sounds.background.play(); //Background Music
+	//game.sounds.background.play(); //Background Music
     scramble(); // Baralhar as cartas
-    tempo(); // Contador de tempo
+    startTimer(); // Contador de tempo
 	 
 	//completar
 }
