@@ -1,0 +1,125 @@
+body {
+    margin: 0;
+    padding: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: #ffffff;
+    background: url(../images/background.png) repeat;
+    background-size: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Título do jogo */
+#titulo {
+    font-size: 28px;
+    font-weight: bold;
+    color: white;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+/* Tabuleiro de jogo (board) */
+#tabuleiro {
+    display: flex;
+    flex-wrap: wrap;
+    grid-template-columns: repeat(4, 102px);
+    grid-template-rows: repeat(4, 102px);
+    gap: 10px;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    cursor: pointer;
+}
+
+/* Contentor */
+#container {
+    position: relative;
+    padding: 0;
+    width: 450px;
+    height: 450px;
+    border: 10px #1F4952 solid;
+    border-radius: 2%;
+    box-shadow: 4px 4px 4px #1E7179;
+    background-color: #2D5A63;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+#restartbtn {
+    position: relative;
+    top: 20px; /* Move para baixo do tabuleiro */
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #303333;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+#restartbtn:hover {
+    background-color: #1E7179;
+}
+
+/*-----------------------------------------------------------------------------*/
+
+/*Define uma cara*/
+.carta{
+    display: block;
+    height: 102px;
+    width: 102px;
+    background-image: url(../images/download.png);
+    background-size: cover;
+    position: relative;
+    cursor: pointer;
+    transition: transform 0.3s ease-in-out;
+}
+
+/*classe que mostra a carta virada ao contrário*/
+.escondida {
+    background-image: url(../images/download.png); /* Certifique-se que este caminho está correto */
+    background-size: cover;
+}
+
+/*Classe que anima as cartas quando existe uma correspondência*/
+.matched{
+    animation: matchKF alternate 0.1s;
+    pointer-events: none;
+}
+
+@keyframes matchKF{
+    from{ transform: scale(0);}
+    to{ transform: scale(1.1);}
+}
+
+.hidden {
+    display: none;
+    
+}
+
+/*Formatação da progress bar*/
+#time{
+    position: fixed;
+    bottom: 0px;
+    width: 100%;
+    color: blue;
+    border: none;
+}
+
+/* classe que anima a progress bar quando é adicionada à sua lista de classes*/
+.warning{
+    animation: wa alternate 1s infinite;
+}
+
+@keyframes wa{
+    from{background-color: blue;}
+    to{background-color:red;}
+}
