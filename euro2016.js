@@ -138,7 +138,7 @@ function scramble() {
 }
 
 function virarCarta() {
-    // Evitar virar mais de uma carta ao mesmo tempo
+    // Evitar virar mais de duas cartas ao mesmo tempo
     if (this.classList.contains("virada") || secondCard) return; 
 
     this.classList.remove("escondida");
@@ -163,6 +163,7 @@ function virarCarta() {
         setTimeout(matchPairs, 200); 
     }
 }
+
 
 
 
@@ -195,9 +196,10 @@ function matchPairs() {
             // Redefinir as variáveis de carta virada
             firstCard = null;
             secondCard = null;
-        }, 200);
+        }, 200); // Altere o delay conforme necessário
     }
 }
+
 
 
 function restartGame() {
@@ -217,6 +219,7 @@ function restartGame() {
 
     startTimer(); // Inicia o timer novamente
 }
+
 
 
 function resetSelection() {
