@@ -8,10 +8,10 @@ const game = {}; // encapsula a informação de jogo. Está vazio mas vai-se pre
 
 // sons do jogo
 const sounds = {
-	background: new Audio("/sounds/euro2016.mp3"),
-	flip: new Audio("/sounds/virar.mp3"),
-	success: new Audio("/sounds/sucesso.mp3"),
-	hide: new Audio("/sounds/esconder.mp3")
+	background: null,
+	flip: null,
+	success: null,
+	hide: null
 };
 
 // numero de linhas e colunas do tabuleiro;
@@ -31,9 +31,11 @@ const face = {
 };
 
 const CARDSIZE = 102; 	// tamanho da carta (altura e largura)
-let firstCard = null, secondCard = null;
-let flip =true;
-let matchPairs = 0
+let firstCard = null;
+let secondCard = null;
+let flip = true;
+let matchPairsFound = false;
+//let matchPairs = 0;
 let tempoDecorrido = 0;
 
 // Array que armazena objectos face que contem posicionamentos da imagem e codigos dos paises
@@ -74,7 +76,7 @@ function setupBoard() {
     let mixedFaces = [...faces, ...faces];
     mixedFaces = mixedFaces.sort(() => Math.random() - 0.5);
     game.stage.innerHTML ="";
-    //board = [];
+
     cartas.forEach((carta, index) => {
 		let umaCarta = document.createElement("div");
 		umaCarta.classList.add("carta", "escondida");
@@ -82,7 +84,6 @@ function setupBoard() {
 		umaCarta.style.backgroundPosition = `-${carta.x}px -${carta.y}px`;
 		umaCarta.dataset.country = carta.country;
 		umaCarta.addEventListener("click", virarCarta);
-		tabuleiro.appendChild(umaCarta);
         clearInterval(timeHandler);
 	})
 }
@@ -94,38 +95,36 @@ function render() {
 
 function createCountries() {
     const tabuleiro = document.querySelector("#tabuleiro");
-    tabuleiro.innerHTML = ""; // Limpa o tabuleiro antes de adicionar cartas
+    tabuleiro.innerHTML = ""; // Limpar o tabuleiro antes de criar novas cartas
 
     let totalCartas = ROWS * COLS;
     let cartas = [];
 
-    // Criar pares de cartas
+    // Criar pares de cartas (8 pares para um tabuleiro 4x4)
     for (let i = 0; i < totalCartas / 2; i++) {
-        let umaFace1 = Object.create(face);
-        let umaFace2 = Object.create(face);
-        umaFace1.country = i;
-        umaFace2.country = i;
+        let umaFace1 = { country: faces[i].code, img: faces[i].img };
+        let umaFace2 = { country: faces[i].code, img: faces[i].img };
         cartas.push(umaFace1, umaFace2);
     }
 
     cartas.sort(() => Math.random() - 0.5); // Embaralhar
 
-    // Criar as cartas no HTML
-    cartas.forEach((carta, index) => {
+    // Criar e adicionar as cartas ao tabuleiro
+    cartas.forEach((carta) => {
         let umaCarta = document.createElement("div");
         umaCarta.classList.add("carta", "escondida");
         umaCarta.dataset.country = carta.country;
-        umaCarta.style.backgroundImage = "url('images/download.png')";
+        umaCarta.style.backgroundImage = "url('images/download.png')"; // Imagem de verso
         umaCarta.style.backgroundSize = "cover";
         umaCarta.addEventListener("click", virarCarta);
 
-        // Adicionar ao tabuleiro
         tabuleiro.appendChild(umaCarta);
-        console.log(`Carta ${index} adicionada ao tabuleiro: País ${carta.country}`);
     });
 
     console.log("Cartas criadas e adicionadas ao tabuleiro.");
 }
+
+
 
 // baralha as cartas no tabuleiro
 function scramble() {
@@ -139,17 +138,86 @@ function scramble() {
 }
 
 function virarCarta() {
-    if (this.classList.contains("escondida")) {
-        this.classList.remove("escondida");
-        this.classList.add("virada");
-        this.style.backgroundImage = `url(${faces[this.dataset.country].img})`;
+    // Evitar virar mais de uma carta ao mesmo tempo
+    if (this.classList.contains("virada") || secondCard) return; 
+
+    this.classList.remove("escondida");
+    this.classList.add("virada");
+
+    let countryCode = this.dataset.country;
+    let cartaCorrespondente = faces.find(f => f.code === countryCode);
+    
+    if (cartaCorrespondente) {
+        this.style.backgroundImage = `url(${cartaCorrespondente.img})`;
         game.sounds.flip.play();
     } else {
-        this.classList.add("escondida");
-        this.classList.remove("virada");
-        this.style.backgroundImage = "url('images/download.png')";
+        console.error("Erro ao encontrar imagem para o país:", countryCode);
+    }
+
+    // Se for a primeira carta virada
+    if (!firstCard) {
+        firstCard = this;
+    } else {
+        // Se for a segunda carta virada, faz a verificação do par
+        secondCard = this;
+        setTimeout(matchPairs, 200); 
     }
 }
+
+
+
+function matchPairs() {
+    if (!firstCard || !secondCard) return;
+
+    let country1 = firstCard.dataset.country;
+    let country2 = secondCard.dataset.country;
+
+    // Verifica se as cartas viradas formam um par
+    if (country1 === country2) {
+        game.sounds.success.play();
+
+        // Limpar as cartas viradas, pois são um par
+        firstCard = null;
+        secondCard = null;
+
+        // Verifica se o jogador venceu
+        checkWin();
+    } else {
+        // Se não formarem um par, volta ao estado inicial (escondidas)
+        setTimeout(() => {
+            firstCard.classList.add("escondida");
+            secondCard.classList.add("escondida");
+
+            // Restaura a imagem de fundo das cartas
+            firstCard.style.backgroundImage = "url('images/download.png')";
+            secondCard.style.backgroundImage = "url('images/download.png')";
+
+            // Redefinir as variáveis de carta virada
+            firstCard = null;
+            secondCard = null;
+        }, 200);
+    }
+}
+
+
+function restartGame() {
+    matchPairsFound = false; // Resetando o estado de pares encontrados
+    firstCard = null;
+    secondCard = null;
+
+    createCountries(); // Garante que as cartas são recriadas
+    scramble(); // Embaralha novamente
+
+    // Reseta todas as cartas para o estado inicial
+    document.querySelectorAll(".carta").forEach(carta => {
+        carta.classList.add("escondida");
+        carta.classList.remove("virada");
+        carta.style.backgroundImage = "url('images/download.png')";
+    });
+
+    startTimer(); // Inicia o timer novamente
+}
+
 
 function resetSelection() {
     firstCard = null;
@@ -157,42 +225,19 @@ function resetSelection() {
     canFlip = true;
 }
 
-function restartGame() {
-    clearInterval(timeHandler);
-    matchPairs = 0; // Resetar pares encontrados
-    firstCard = null;
-    secondCard = null;
-    flip = true;
-
-    // Resetar o tempo na tela
-    document.querySelector("#time").value = "0";
-
-    // Reiniciar o tabuleiro e embaralhar cartas
-    createCountries();  
-    scramble();    
-
-    // Resetar todas as cartas para ficarem viradas para baixo
-    document.querySelectorAll(".carta").forEach(carta => {
-        carta.classList.remove("virada");
-        carta.classList.add("escondida");
-        carta.style.backgroundImage = "url('images/download.png')";
-    });
-
-    startTimer(); // Reinicia o tempo
-}
-
 
 function checkWin() {
-    if (matchPairs === (ROWS * COLS) / 2) {
-        clearInterval(timeHandler); // Para o tempo
+    if (matchPairs === (ROWS * COLS) / 2) { 
+        clearInterval(timeHandler);
         setTimeout(() => {
             alert("Parabéns! Encontrou todos os pares!");
-            resetGame();
+            restartGame();
         }, 500);
     }
 }
 
 let timeHandler;  
+
 function startTimer() {
     let contador = 0;
     let maxCount = 45;
