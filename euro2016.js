@@ -69,7 +69,6 @@ function init() {
     startTimer(); // Contador de tempo
     restartGame();
     render();
-	//completar
 }
 
 function setupBoard() {
@@ -173,30 +172,33 @@ function matchPairs() {
     let country1 = firstCard.dataset.country;
     let country2 = secondCard.dataset.country;
 
-    // Verifica se as cartas viradas formam um par
     if (country1 === country2) {
         game.sounds.success.play();
 
-        // Limpar as cartas viradas, pois são um par
+        // Manter as cartas visíveis e impedir que sejam clicadas novamente
+        firstCard.removeEventListener("click", virarCarta);
+        secondCard.removeEventListener("click", virarCarta);
+
         firstCard = null;
         secondCard = null;
 
-        // Verifica se o jogador venceu
         checkWin();
     } else {
-        // Se não formarem um par, volta ao estado inicial (escondidas)
+        // Se as cartas não forem um par, esconde após um pequeno delay
         setTimeout(() => {
+            firstCard.classList.remove("virada");
+            secondCard.classList.remove("virada");
+
             firstCard.classList.add("escondida");
             secondCard.classList.add("escondida");
 
-            // Restaura a imagem de fundo das cartas
             firstCard.style.backgroundImage = "url('images/download.png')";
             secondCard.style.backgroundImage = "url('images/download.png')";
 
-            // Redefinir as variáveis de carta virada
+            // Permitir que o jogador vire novas cartas
             firstCard = null;
             secondCard = null;
-        }, 200); // Altere o delay conforme necessário
+        }, 500);
     }
 }
 
