@@ -159,7 +159,7 @@ function virarCarta() {
     } else {
         // Se for a segunda carta virada, faz a verificação do par
         secondCard = this;
-        setTimeout(matchPairs, 200); 
+        setTimeout(matchPairs, 500); 
     }
 }
 
@@ -223,7 +223,6 @@ function restartGame() {
 }
 
 
-
 function resetSelection() {
     firstCard = null;
     secondCard = null;
@@ -232,14 +231,24 @@ function resetSelection() {
 
 
 function checkWin() {
-    if (matchPairs === (ROWS * COLS) / 2) { 
-        clearInterval(timeHandler);
+    let cartasViradas = document.querySelectorAll(".carta.virada").length;
+    let totalCartas = document.querySelectorAll(".carta").length;
+
+    console.log(`Cartas viradas: ${cartasViradas}, Total de cartas: ${totalCartas}`);
+
+    if (cartasViradas === totalCartas) { 
+        clearInterval(timeHandler); // Para o tempo
+        console.log("Jogo concluído!");
+        
         setTimeout(() => {
-            alert("Parabéns! Encontrou todos os pares!");
-            restartGame();
-        }, 500);
+            alert(`Parabéns! Encontrou todos os pares!`);
+            document.getElementById("reiniciar").disabled = false; // Garante que o botão está ativo
+        }, 300); // Espera 
     }
 }
+
+
+
 
 let timeHandler;  
 
@@ -266,7 +275,7 @@ function startTimer() {
   
       if (contador === maxCount) {
         clearInterval(timeHandler);
-        timeDisplay.classList.remove("warning");
+        timeDisplay.classList("warning");
       } 
     }, 1000); // Agora conta corretamente de 1 em 1 segundo
   }
@@ -317,3 +326,4 @@ function getFaces() {
 /*------------------------------------------------------------------------------------------------  
  ** /!\ NÃO MODIFICAR ESTAS FUNÇÕES /!\
 --------------------------------------------------------------------------------------------------*/
+
