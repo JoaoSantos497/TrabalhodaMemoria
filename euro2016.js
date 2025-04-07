@@ -53,29 +53,32 @@ window.addEventListener("load", init, false);
 window.addEventListener("keydown", (e) => { if (e.code === "Space") restartGame(); });
 
 function init() {
-	game.stage = document.querySelector("#stage");
+    game.stage = document.querySelector("#stage");
     document.querySelector("#restartbtn").addEventListener("click", restartGame);
 
     clearInterval(timeHandler); // Resetar o tempo se necessário
-	setupAudio(); 		// configurar o audio
-	createCountries();	// criar países
-	game.sounds.background.loop = true;
-	game.sounds.background.play();
+    setupAudio();               // Configurar o áudio
+    createCountries();          // Criar países
+    game.sounds.background.loop = true;
+    game.sounds.background.play();
 
-    showAllCards(); 
+    showAllCards();             // Mostra todas as cartas inicialmente
 
+    
+
+    // Espera 2 segundos antes de começar o baralhamento
     setTimeout(() => {
-        scramble();        
+        scrambleInitial();             // Embaralha as cartas visivelmente
         setTimeout(() => {
-            hideAllCards();    // Depois de baralhar, esconde as cartas
-            startTimer();      // Inicia o timer depois de virar as cartas
-        }, 2000); // delay para vero scramble
-    }, 1000); // Tempo inicial para ver as cartas
+            hideAllCards();     // Esconde as cartas após o baralhamento
+            startTimer();       // Inicia o temporizador
+        }, 2000);               // Espera 2 segundos após o embaralhamento
+    }, 2000);                   // Espera 2 segundos antes de embaralhar
 
+    // Criar a barra de progresso
     ProgressBar();
     updateProgressBar(contador);
 }
-
 
 function setupBoard() {
     let mixedFaces = [...faces, ...faces];
@@ -123,43 +126,74 @@ function createCountries() {
     });
 }
 
+
 // Mostra todas as cartas
 function showAllCards() {
     document.querySelectorAll(".carta").forEach(carta => {
-        carta.classList.add("virada");
+        carta.classList.add("virada"); // Aplica a classe 'virada' para mostrar a imagem
     });
 }
 
-// Esconde as cartas
+
+// Esconde todas as cartas, voltando à imagem inicial
 function hideAllCards() {
     document.querySelectorAll(".carta").forEach(carta => {
-        carta.classList.remove("virada");
-        carta.style.backgroundImage = "url('images/download.png')";
+        carta.classList.remove("virada"); // Remove a classe 'virada' para esconder a imagem
+        carta.style.backgroundImage = "url('images/download.png')"; // Reverte a imagem de fundo para a inicial
     });
 }
 
 
-// baralha as cartas no tabuleiro
-function scramble() {
+// Scramble inicial
+function scrambleInitial() {
     const tabuleiro = document.querySelector("#tabuleiro");
     let cartas = Array.from(tabuleiro.children); // Pega todas as cartas do tabuleiro
+    
+    // Embaralha as cartas
+    cartas.sort(() => Math.random() - 0.5);
 
-    // Filtra as cartas que não foram viradas ou não possuem um par correto
-    let cartasNaoCorrespondidas = cartas.filter(carta => !carta.classList.contains("virada"));
+    // Reposiciona as cartas no tabuleiro
+    cartas.forEach((carta, index) => {
+        tabuleiro.appendChild(carta); // Adiciona a carta no novo local
+    });
+}
 
-    // Embaralha as cartas não correspondidas
-    cartasNaoCorrespondidas.sort(() => Math.random() - 0.5);
+// Scramble após os 45 segundos
+function scrambleAfterTime() {
+    const tabuleiro = document.querySelector("#tabuleiro");
+    let cartas = Array.from(tabuleiro.children); // Pega todas as cartas do tabuleiro
+    
+    // Filtra as cartas que NÃO estão bloqueadas (não combinadas)
+    let cartasNaoBloqueadas = cartas.filter(carta => !carta.classList.contains("bloqueada"));
 
-    // Agora vamos colocar as cartas embaralhadas de volta no tabuleiro, mas deixando as cartas já combinadas no seu lugar
+    // Embaralha as cartas não bloqueadas
+    cartasNaoBloqueadas.sort(() => Math.random() - 0.5);
+
+    // Reposiciona as cartas no tabuleiro
     let index = 0;
     cartas.forEach(carta => {
-        if (!carta.classList.contains("virada")) {
-            // Reposiciona as cartas não correspondidas
-            tabuleiro.appendChild(cartasNaoCorrespondidas[index]);
+        if (!carta.classList.contains("bloqueada")) {
+            // Reposiciona as cartas não bloqueadas (embaralhadas)
+            tabuleiro.appendChild(cartasNaoBloqueadas[index]);
             index++;
         }
     });
+
+    // Certifica que as cartas bloqueadas não se movem
+    let bloqueadas = cartas.filter(carta => carta.classList.contains("bloqueada"));
+    bloqueadas.forEach(carta => {
+        tabuleiro.appendChild(carta); // Cartas bloqueadas permanecem nas suas posições
+    });
+
+    // Esconde as cartas não bloqueadas após 2 segundos
+    setTimeout(() => {
+        cartasNaoBloqueadas.forEach(carta => {
+            carta.classList.remove("virada"); // Remove a classe 'virada' para esconder as cartas
+            carta.style.backgroundImage = "url('images/download.png')"; // Reverte a imagem de fundo para o original
+        });
+    }, 2000);  // Atraso de 2 segundos para esconder as cartas
 }
+
 
 function virarCarta() {
     if (this.classList.contains("virada") || secondCard) return;
@@ -185,6 +219,10 @@ function matchPairs() {
 
     if (firstCard.dataset.country === secondCard.dataset.country) {
         game.sounds.success.play();
+        // Marca as cartas como bloqueadas (não movem durante o embaralhamento)
+        firstCard.classList.add("bloqueada");
+        secondCard.classList.add("bloqueada");
+
         firstCard.removeEventListener("click", virarCarta);
         secondCard.removeEventListener("click", virarCarta);
         firstCard = null;
@@ -202,6 +240,8 @@ function matchPairs() {
     }
 }
 
+
+
 // REINICIAR O JOGO
 function restartGame() {
     // Reset das variáveis do jogo
@@ -210,18 +250,31 @@ function restartGame() {
     tempoDecorrido = 0;
     contador = 0;
 
-    createCountries();     // Cria novas cartas
-    showAllCards();        // Mostra as cartas inicialmente
+    createCountries(); // Cria novas cartas
+    showAllCards();    // Mostra as cartas inicialmente
     clearInterval(timeHandler); // Para o temporizador anterior, se necessário
 
     setTimeout(() => {
-        scramble();        // Baralha as cartas enquanto ainda estão viradas
-
+        scrambleInitial(); // Embaralha as cartas visivelmente
         setTimeout(() => {
-            hideAllCards();   
-            startTimer();     
-        }, 1500); // Delay para mostrar a nova posição das cartas
-    }, 2500); // Tempo para o jogador ver todas as cartas
+            hideAllCards(); // Esconde as cartas após o embaralhamento
+            startTimer();   // Inicia o temporizador
+        }, 2000); // Espera 2 segundos após o embaralhamento
+    }, 2000); // Espera 2 segundos para mostrar as cartas inicialmente
+}
+
+// Após os 45 segundos, se não terminou, embaralha apenas as cartas não combinadas
+function handleEndOfTime() {
+    // Verifica se o jogo ainda não terminou e embaralha apenas as cartas não combinadas
+    const cartasViradas = document.querySelectorAll(".carta.virada").length;
+    const totalCartas = document.querySelectorAll(".carta").length;
+
+    if (cartasViradas < totalCartas) {
+        scrambleAfterTime(); // Embaralha as cartas não combinadas
+        // Reinicia o temporizador
+        clearInterval(timeHandler);
+        startTimer();
+    }
 }
 
 function resetSelection() {
@@ -356,8 +409,6 @@ function showModal(message = "Parabéns! Ganhaste o jogo!") {
     setTimeout(() => modal.classList.add("show"), 10);
 }
 
-
-
 // Barra de Progresso
 function ProgressBar() {
     const barra = document.createElement("progress");
@@ -421,7 +472,7 @@ function startTimer() {
                     if (match) carta.style.backgroundImage = `url(${match.img})`;
                 });
         
-                scramble();
+                scrambleAfterTime
         
                 setTimeout(() => {
                     cartasSemMatch.forEach(carta => {
@@ -433,6 +484,7 @@ function startTimer() {
         }
     }, 1000);
 }
+
 
 
 /* ------------------------------------------------------------------------------------------------  
