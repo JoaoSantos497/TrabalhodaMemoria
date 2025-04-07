@@ -336,7 +336,11 @@ function showModal(message = "Parabéns! Ganhaste o jogo!") {
     // Só adiciona tempo se a mensagem ainda não contiver "segundo"
     if (!message.includes("segundo")) {
         let segundosDecorridos = tempoDecorrido + contador;
-        message += `\nTempo: ${segundosDecorridos} segundos`;
+        let minutos = Math.floor(segundosDecorridos / 60);
+        let segundos = segundosDecorridos % 60;
+        let tempoFormatado = `${minutos}m ${segundos}s`;
+        message += `\nTempo: ${tempoFormatado}`;
+
     }
 
     document.getElementById("modalMessage").innerText = message;
