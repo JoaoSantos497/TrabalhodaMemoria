@@ -32,6 +32,7 @@ let tempo = 0;
 let tempoDecorrido = 0;
 let contador = 0;  // Inicializa o contador com 0
 const maxCount = 45;  // Define o limite de 45 segundos
+let tempoInicial = Date.now();
 
 
 // Array que armazena objectos face que contem posicionamentos da imagem e codigos dos paises
@@ -200,17 +201,20 @@ function restartGame() {
     firstCard = null;
     secondCard = null;
 
-    createCountries(); // Cria novas cartas
-    showAllCards();    // Mostra as cartas inicialmente
+    createCountries();     // Cria novas cartas
+    showAllCards();        // Mostra as cartas inicialmente
+    clearInterval(timeHandler); // Para o temporizador anterior, se necessário
 
     setTimeout(() => {
-        scramble();    // Baralha as cartas viradas
+        scramble();        // Baralha as cartas enquanto ainda estão viradas
+
         setTimeout(() => {
-            hideAllCards(); // Esconde após baralhar
-            startTimer();   // Começa o temporizador só depois
-        }, 2000); // Delay curto após baralhar
-    }, 1000); // Tempo para ver todas as cartas antes do jogo começar
+            hideAllCards();   
+            startTimer();     
+        }, 1000); // Delay para mostrar a nova posição das cartas
+    }, 3000); // Tempo para o jogador ver todas as cartas
 }
+
 
 function resetSelection() {
     firstCard = null;
@@ -224,9 +228,10 @@ function checkWin() {
 
     if (cartasViradas === totalCartas) {
         clearInterval(timeHandler);
-        showModal();
+        showModal("Parabéns! Concluiste o jogo!");
     }
 }
+
 
 // Style do Modal
 const style = document.createElement("style");
@@ -328,76 +333,91 @@ function showModal(message = "Parabéns! Ganhaste o jogo!") {
         modal = document.getElementById("winModal");
     }
 
+    // Só adiciona tempo se a mensagem ainda não contiver "segundo"
+    if (!message.includes("segundo")) {
+        let tempoFinal = Date.now();
+        let segundosDecorridos = Math.floor((tempoFinal - tempoInicial) / 1000);
+        message += `\nTempo: ${segundosDecorridos} segundos`;
+    }
+
     document.getElementById("modalMessage").innerText = message;
-    modal.style.display = "flex"; // Exibe o modal
-    setTimeout(() => modal.classList.add("show"), 10); // Trigger da animação
+    modal.style.display = "flex";
+    setTimeout(() => modal.classList.add("show"), 10);
 }
-
-
 
 // Barra de Progresso
 function ProgressBar() {
     const barra = document.createElement("progress");
     barra.id = "time";
-    barra.max = 100;  // Valor máximo agora é 100 para percentagem
-    barra.value = 0;  // Inicializa com valor 0
+    barra.max = 45;  
+    barra.value = 0; 
     document.body.appendChild(barra);
 }
 
 // Update da Progress Bar
 function updateProgressBar(segundos) {
-    const progressBar = document.getElementById("time"); // Corrige o ID da barra
-    const percent = Math.min((segundos / 45) * 100, 100); // Calcula o percentual de preenchimento
-    progressBar.value = percent; // Atualiza o valor da barra de progresso
+    const progressBar = document.getElementById("time");
+    progressBar.value = Math.min(segundos, maxCount);
+}
+
+// Restart da Progress Bar após os 45 segundos
+function restartProgressBarVisual() {
+    contador = 0;
+    updateProgressBar(0);
 }
 
 // Contador de Tempo
 function startTimer() {
-    let timeDisplay = document.getElementById("time");
-
-    // Limpar o intervalo anterior
-    clearInterval(timeHandler); 
-
-    // Reseta o contador
+    const timeDisplay = document.getElementById("time");
+    clearInterval(timeHandler);
+    
     contador = 0;
-    timeDisplay.value = 0; // Inicializa a barra de progresso
+    timeDisplay.value = 0;
 
     timeHandler = setInterval(() => {
-        contador++; // Incrementa o contador a cada segundo
-        timeDisplay.value = (contador / maxCount) * 100; // Atualiza o valor da barra de progresso
+        contador++;
+        updateProgressBar(contador);
 
-        // Atualiza a classe de alerta nos últimos 5 segundos
         if (contador >= maxCount - 5) {
             timeDisplay.classList.add("alerta");
         } else {
             timeDisplay.classList.remove("alerta");
         }
 
-        // Ao atingir o limite de 45 segundos
         if (contador >= maxCount) {
-            clearInterval(timeHandler); // Para o temporizador
-            timeDisplay.value = 0; // Reseta a barra
-            timeDisplay.classList.remove("alerta"); // Remove o alerta
-
-            // Baralha as cartas não viradas
-            scramble();
-
-            // Resetar as cartas não viradas
-            document.querySelectorAll(".carta").forEach(carta => {
-                if (!carta.classList.contains("virada")) {
-                    carta.style.backgroundImage = "url('images/download.png')";
-                    setTimeout(() => carta.classList.remove("virada"), 1000); // Remove a classe "virada"
-                }
-            });
-
-            startTimer(); // Reinicia o temporizador
+            const cartasViradas = document.querySelectorAll(".carta.virada").length;
+            const totalCartas = document.querySelectorAll(".carta").length;
+        
+            if (cartasViradas !== totalCartas) {
+                tempoDecorrido += contador;
+                restartProgressBarVisual();
+                timeDisplay.classList.remove("alerta");
+        
+                const cartasComMatch = Array.from(document.querySelectorAll(".carta.virada"))
+                    .filter(carta => !carta.onclick && !carta._listeners);
+        
+                const cartasSemMatch = Array.from(document.querySelectorAll(".carta"))
+                    .filter(carta => !carta.classList.contains("virada") || carta.onclick || carta._listeners);
+        
+                cartasSemMatch.forEach(carta => {
+                    carta.classList.add("virada");
+                    const code = carta.dataset.country;
+                    const match = faces.find(f => f.code === code);
+                    if (match) carta.style.backgroundImage = `url(${match.img})`;
+                });
+        
+                scramble();
+        
+                setTimeout(() => {
+                    cartasSemMatch.forEach(carta => {
+                        carta.classList.remove("virada");
+                        carta.style.backgroundImage = "url('images/download.png')";
+                    });
+                }, 1000);
+            }
         }
-    }, 1000); // A cada 1 segundo
+    }, 1000);
 }
-
-
-
-
 
 
 /* ------------------------------------------------------------------------------------------------  
