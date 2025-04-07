@@ -62,15 +62,15 @@ function init() {
 	game.sounds.background.loop = true;
 	game.sounds.background.play();
 
-    showAllCards(); // Mostrar todas as cartas imediatamente
+    showAllCards(); 
 
     setTimeout(() => {
-        scramble();         // Baralha as cartas enquanto estão viradas
+        scramble();        
         setTimeout(() => {
             hideAllCards();    // Depois de baralhar, esconde as cartas
-            startTimer();      // Inicia o temporizador só depois de esconder
-        }, 1000); // Pequeno delay para garantir que o baralhamento é visível
-    }, 2000); // Tempo de visualização inicial das cartas
+            startTimer();      // Inicia o timer depois de virar as cartas
+        }, 2000); // delay para vero scramble
+    }, 1000); // Tempo inicial para ver as cartas
 
     ProgressBar();
     updateProgressBar(contador);
@@ -141,16 +141,16 @@ function hideAllCards() {
 
 // baralha as cartas no tabuleiro
 function scramble() {
-    let tabuleiro = document.querySelector("#tabuleiro");
-    let cartas = Array.from(tabuleiro.children); // Pega todas as cartas
+    const tabuleiro = document.querySelector("#tabuleiro");
+    let cartas = Array.from(tabuleiro.children); // pega todas as cartas do tabuleiro
 
-    // Baralha apenas as cartas não viradas
-    cartas = cartas.filter(carta => carta.classList.contains("virada"));
-    cartas.sort(() => Math.random() - 0.5); // Baralha as cartas aleatoriamente
+    // Embaralha todas as cartas, independentemente do estado
+    cartas.sort(() => Math.random() - 0.5);
 
-    // Re-adiciona as cartas baralhadas ao tabuleiro
+    // Reanexa as cartas ao tabuleiro na nova ordem
     cartas.forEach(carta => tabuleiro.appendChild(carta));
 }
+
 
 
 function virarCarta() {
@@ -208,11 +208,9 @@ function restartGame() {
         setTimeout(() => {
             hideAllCards(); // Esconde após baralhar
             startTimer();   // Começa o temporizador só depois
-        }, 300); // Delay curto após baralhar
-    }, 2000); // Tempo para ver todas as cartas antes do jogo começar
+        }, 2000); // Delay curto após baralhar
+    }, 1000); // Tempo para ver todas as cartas antes do jogo começar
 }
-
-
 
 function resetSelection() {
     firstCard = null;
@@ -346,7 +344,6 @@ function ProgressBar() {
     document.body.appendChild(barra);
 }
 
-
 // Update da Progress Bar
 function updateProgressBar(segundos) {
     const progressBar = document.getElementById("time"); // Corrige o ID da barra
@@ -354,9 +351,6 @@ function updateProgressBar(segundos) {
     progressBar.value = percent; // Atualiza o valor da barra de progresso
 }
 
-
-
-// Contador de Tempo
 // Contador de Tempo
 function startTimer() {
     let timeDisplay = document.getElementById("time");
