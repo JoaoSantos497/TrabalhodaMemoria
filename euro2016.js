@@ -29,6 +29,7 @@ let flip = true;
 let matchPairsFound = false;
 let timeHandler;  
 //let matchPairs = 0;
+let tempo = 0;
 let tempoDecorrido = 0;
 
 // Array que armazena objectos face que contem posicionamentos da imagem e codigos dos paises
@@ -229,22 +230,36 @@ function startTimer() {
 
     clearInterval(timeHandler);
     timeDisplay.value = contador;
+    timeDisplay.classList.remove("alerta");
 
     timeHandler = setInterval(() => {
         contador++;
         timeDisplay.value = contador;
 
-        if (contador % maxCount === 0) {
+        // Ativa alerta visual nos últimos 5 segundos
+        if (contador >= maxCount - 5) {
+            timeDisplay.classList.add("alerta");
+        }
+
+        if (contador >= maxCount) {
+            clearInterval(timeHandler);
+            timeDisplay.value = 0;
+            timeDisplay.classList.remove("alerta");
+
             scramble();
+
             document.querySelectorAll(".carta").forEach(carta => {
                 if (!carta.classList.contains("virada")) {
                     carta.style.backgroundImage = "url('images/download.png')";
                     setTimeout(() => carta.classList.remove("virada"), 1000);
                 }
             });
+
+            startTimer(); // reiniciar o ciclo
         }
     }, 1000);
 }
+
 
 
 /* ------------------------------------------------------------------------------------------------  

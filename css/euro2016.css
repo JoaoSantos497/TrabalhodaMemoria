@@ -122,14 +122,37 @@ body {
     background-color: #1E7179;
 }
 
-/* Formatação da progress bar */
 #time {
     position: fixed;
     bottom: 0px;
     width: 100%;
-    color: blue;
+    height: 20px;
     border: none;
+    appearance: none;
 }
+
+/* Estilo normal da barra */
+#time::-webkit-progress-bar {
+    background-color: #eee;
+}
+
+#time::-webkit-progress-value {
+    background-color: rgb(9, 187, 38);
+    transition: background-color 0.3s ease;
+}
+
+/* Estilo de alerta para os últimos 5 segundos */
+#time.alerta::-webkit-progress-value {
+    background-color: red;
+    animation: piscar 1s infinite;
+}
+
+@keyframes piscar {
+    0% { opacity: 1; }
+    50% { opacity: 0.4; }
+    100% { opacity: 1; }
+}
+
 
 /* classe que anima a progress bar quando é adicionada à sua lista de classes */
 .warning {
