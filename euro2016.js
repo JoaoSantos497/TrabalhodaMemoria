@@ -161,10 +161,6 @@ function scramble() {
     });
 }
 
-
-
-
-
 function virarCarta() {
     if (this.classList.contains("virada") || secondCard) return;
     this.classList.add("virada");
