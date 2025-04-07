@@ -82,6 +82,11 @@ body {
     border: 1px solid black;
 }
 
+.carta:hover {
+    transform: scale(1.1);
+    transition: transform 0.1s ease-in-out;
+}
+
 /*Classe que mostra a carta virada ao contrário*/
 .escondida {
     background-image: url(../images/download.png); /* Certifique-se que este caminho está correto */
@@ -128,30 +133,41 @@ body {
     bottom: 0px;
     left: 0;
     width: 100%;
-    height: 20px;
-    border: none;
-    appearance: none;
-    z-index: 9999; /* garante que está por cima de tudo */
+    height: 16px; /* Reduzimos a altura para uma barra mais fina */
+    background-color: #ddd; /* Fundo claro, mais moderno */
+    border-radius: 8px; /* Bordas arredondadas */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Sombra suave */
+    z-index: 9999; /* Garante que está por cima de tudo */
+    overflow: hidden; /* Garante que a borda arredondada se aplica ao conteúdo */
 }
 
+/* Estilo da barra de progresso */
 #time::-webkit-progress-bar {
-    background-color: #eee;
+    background-color: #ddd; /* Fundo claro da barra */
+    border-radius: 8px; /* Bordas arredondadas */
 }
 
+/* Estilo do valor da barra de progresso */
 #time::-webkit-progress-value {
-    background-color: green;
-    transition: background-color 0.3s ease;
+    background-color: green; /* Mantém o verde */
+    border-radius: 8px; /* Bordas arredondadas */
+    transition: width 0.5s ease, background-color 0.3s ease; /* Transição suave para o tamanho e cor */
 }
 
+/* Estilo de alerta (vermelho) */
 #time.alerta::-webkit-progress-value {
-    background-color: red;
-    transition: background-color 0.5s ease;
+    background-color: red; /* Mantém o vermelho */
+    border-radius: 8px; /* Bordas arredondadas */
+    transition: width 0.5s ease, background-color 0.5s ease; /* Transição suave para o tamanho e cor */
 }
 
+/* Efeito de piscar para o alerta */
 @keyframes piscar {
     0% { opacity: 1; }
-    50% { opacity: 0.4; }
+    50% { opacity: 0.6; }
     100% { opacity: 1; }
 }
 
-
+#time.alerta {
+    animation: piscar 1s infinite; /* Faz a barra piscar quando em alerta */
+}
