@@ -122,26 +122,27 @@ body {
     background-color: #1E7179;
 }
 
+/* TEMPO */
 #time {
     position: fixed;
     bottom: 0px;
+    left: 0;
     width: 100%;
     height: 20px;
     border: none;
     appearance: none;
+    z-index: 9999; /* garante que está por cima de tudo */
 }
 
-/* Estilo normal da barra */
 #time::-webkit-progress-bar {
     background-color: #eee;
 }
 
 #time::-webkit-progress-value {
-    background-color: rgb(9, 187, 38);
+    background-color: blue;
     transition: background-color 0.3s ease;
 }
 
-/* Estilo de alerta para os últimos 5 segundos */
 #time.alerta::-webkit-progress-value {
     background-color: red;
     animation: piscar 1s infinite;
@@ -154,7 +155,7 @@ body {
 }
 
 
-/* classe que anima a progress bar quando é adicionada à sua lista de classes */
+/* classe que anima a progress bar quando é adicionada à sua lista de classes 
 .warning {
     animation: wa alternate 1s infinite;
 }
@@ -166,4 +167,4 @@ body {
     to {
         background-color: red;
     }
-}
+}*/

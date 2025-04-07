@@ -67,10 +67,7 @@ function init() {
         //game.sounds.background.loop = true;
         //game.sounds.background.play();
     }, 2000);
-    scramble(); // Baralhar as cartas
-    startTimer(); // Contador de tempo
-    //restartGame();
-    //render();
+    ProgressBar();
 }
 
 function setupBoard() {
@@ -213,16 +210,122 @@ function checkWin() {
         showModal();
     }
 }
+// Style do Modal
+const style = document.createElement("style");
+style.innerHTML = `
+.modal {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.4);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    z-index: 1000;
+}
 
-function showModal() {
-    const modal = document.getElementById("winModal");
-    modal.style.display = "flex";
-    document.getElementById("closeModal").addEventListener("click", () => {
-        modal.style.display = "none";
-        restartGame();
+.modal.show {
+    opacity: 1;
+}
+
+.modal-content {
+    background: white;
+    padding: 40px 30px;
+    border-radius: 16px;
+    text-align: center;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    transform: scale(0.95);
+    animation: zoomIn 0.3s ease forwards;
+    font-family: Arial, sans-serif;
+}
+
+.modal-content p {
+    font-size: 18px;
+    margin-bottom: 25px;
+    color: #333;
+}
+
+.modal-content button {
+    padding: 10px 25px;
+    font-size: 15px;
+    background-color: #333;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.modal-content button:hover {
+    background-color: #555;
+}
+
+@keyframes zoomIn {
+    from { transform: scale(0.8); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+`;
+document.head.appendChild(style);
+
+// Estrutura do Modal
+function createModalStructure() {
+    const modal = document.createElement("div");
+    modal.id = "winModal";
+    modal.classList.add("modal");
+
+    const content = document.createElement("div");
+    content.classList.add("modal-content");
+
+    const message = document.createElement("p");
+    message.id = "modalMessage";
+
+    const closeBtn = document.createElement("button");
+    closeBtn.id = "closeModal";
+    closeBtn.innerText = "Fechar";
+
+    content.appendChild(message);
+    content.appendChild(closeBtn);
+    modal.appendChild(content);
+    document.body.appendChild(modal);
+
+    // Evento fechar
+    closeBtn.addEventListener("click", () => {
+        modal.classList.remove("show");
+        setTimeout(() => {
+            modal.style.display = "none";
+            restartGame();
+        }, 300); // tempo para animação
     });
 }
 
+
+// Alert Box Finish
+function showModal(message = "Parabéns! Ganhaste o jogo!") {
+    let modal = document.getElementById("winModal");
+
+    if (!modal) {
+        createModalStructure();
+        modal = document.getElementById("winModal");
+    }
+
+    document.getElementById("modalMessage").innerText = message;
+    modal.style.display = "flex";
+    setTimeout(() => modal.classList.add("show"), 10); // trigger da animação
+}
+
+
+// Barra de Progresso
+function ProgressBar() {
+    const barra = document.createElement("progress");
+    barra.id = "time";
+    barra.max = 45;
+    barra.value = 0;
+    document.body.appendChild(barra);
+}
+
+// Contador de Tempo
 function startTimer() {
     let contador = 0;
     let maxCount = 45;
@@ -236,7 +339,6 @@ function startTimer() {
         contador++;
         timeDisplay.value = contador;
 
-        // Ativa alerta visual nos últimos 5 segundos
         if (contador >= maxCount - 5) {
             timeDisplay.classList.add("alerta");
         }
@@ -255,10 +357,11 @@ function startTimer() {
                 }
             });
 
-            startTimer(); // reiniciar o ciclo
+            startTimer();
         }
     }, 1000);
 }
+
 
 
 
