@@ -64,8 +64,6 @@ function init() {
 
     showAllCards();             // Mostra todas as cartas inicialmente
 
-    
-
     // Espera 2 segundos antes de começar o baralhamento
     setTimeout(() => {
         scrambleInitial();             // Embaralha as cartas visivelmente
@@ -158,42 +156,54 @@ function scrambleInitial() {
     });
 }
 
+let isScrambling = false;
 // Scramble após os 45 segundos
 function scrambleAfterTime() {
+    if (isScrambling) return; // Impede embaralhamentos simultâneos
+    isScrambling = true;
+
     const tabuleiro = document.querySelector("#tabuleiro");
-    let cartas = Array.from(tabuleiro.children); // Pega todas as cartas do tabuleiro
-    
-    // Filtra as cartas que NÃO estão bloqueadas (não combinadas)
-    let cartasNaoBloqueadas = cartas.filter(carta => !carta.classList.contains("bloqueada"));
+    let cartas = Array.from(tabuleiro.children);
 
-    // Embaralha as cartas não bloqueadas
-    cartasNaoBloqueadas.sort(() => Math.random() - 0.5);
+    // Cria uma nova ordem preservando posições das cartas bloqueadas
+    let novaOrdem = Array(cartas.length);
+    let cartasNaoBloqueadas = [];
 
-    // Reposiciona as cartas no tabuleiro
-    let index = 0;
-    cartas.forEach(carta => {
-        if (!carta.classList.contains("bloqueada")) {
-            // Reposiciona as cartas não bloqueadas (embaralhadas)
-            tabuleiro.appendChild(cartasNaoBloqueadas[index]);
-            index++;
+    cartas.forEach((carta, index) => {
+        if (carta.classList.contains("bloqueada")) {
+            novaOrdem[index] = carta; // Mantém carta bloqueada na mesma posição
+        } else {
+            cartasNaoBloqueadas.push(carta); // Para embaralhar
         }
     });
 
-    // Certifica que as cartas bloqueadas não se movem
-    let bloqueadas = cartas.filter(carta => carta.classList.contains("bloqueada"));
-    bloqueadas.forEach(carta => {
-        tabuleiro.appendChild(carta); // Cartas bloqueadas permanecem nas suas posições
+    // Embaralha cartas não bloqueadas
+    cartasNaoBloqueadas.sort(() => Math.random() - 0.5);
+
+    // Preenche posições vazias com cartas embaralhadas
+    let indexEmbaralhada = 0;
+    for (let i = 0; i < novaOrdem.length; i++) {
+        if (!novaOrdem[i]) {
+            novaOrdem[i] = cartasNaoBloqueadas[indexEmbaralhada];
+            indexEmbaralhada++;
+        }
+    }
+
+    // Atualiza o DOM com a nova ordem
+    novaOrdem.forEach(carta => {
+        tabuleiro.appendChild(carta);
     });
 
     // Esconde as cartas não bloqueadas após 2 segundos
     setTimeout(() => {
         cartasNaoBloqueadas.forEach(carta => {
-            carta.classList.remove("virada"); // Remove a classe 'virada' para esconder as cartas
-            carta.style.backgroundImage = "url('images/download.png')"; // Reverte a imagem de fundo para o original
+            carta.classList.remove("virada");
+            carta.style.backgroundImage = "url('images/download.png')";
         });
-    }, 2000);  // Atraso de 2 segundos para esconder as cartas
-}
 
+        isScrambling = false; // Libera para futuros embaralhamentos
+    }, 2000);
+}
 
 function virarCarta() {
     if (this.classList.contains("virada") || secondCard) return;
@@ -264,7 +274,7 @@ function restartGame() {
 }
 
 // Após os 45 segundos, se não terminou, embaralha apenas as cartas não combinadas
-function handleEndOfTime() {
+/*function handleEndOfTime() {
     // Verifica se o jogo ainda não terminou e embaralha apenas as cartas não combinadas
     const cartasViradas = document.querySelectorAll(".carta.virada").length;
     const totalCartas = document.querySelectorAll(".carta").length;
@@ -275,7 +285,7 @@ function handleEndOfTime() {
         clearInterval(timeHandler);
         startTimer();
     }
-}
+}*/
 
 function resetSelection() {
     firstCard = null;
@@ -292,7 +302,6 @@ function checkWin() {
         showModal("Parabéns! Concluiste o jogo!");
     }
 }
-
 
 // Style do Modal
 const style = document.createElement("style");
@@ -434,13 +443,14 @@ function restartProgressBarVisual() {
 function startTimer() {
     const timeDisplay = document.getElementById("time");
     clearInterval(timeHandler);
-    
-    contador = 0;
-    timeDisplay.value = 0;
+
+    contador = 0; // contador visual
+    timeDisplay.value = contador;
 
     timeHandler = setInterval(() => {
-       contador++;
+        contador++;
         updateProgressBar(contador); 
+        timeDisplay.value = contador;
 
         if (contador >= maxCount - 5) {
             timeDisplay.classList.add("alerta");
@@ -449,43 +459,35 @@ function startTimer() {
         }
 
         if (contador >= maxCount) {
+            // Acumula o tempo total decorrido
+            tempoDecorrido += contador;
 
-            const cartasViradas = document.querySelectorAll(".carta.virada").length;
-            const totalCartas = document.querySelectorAll(".carta").length;
-        
-            if (cartasViradas !== totalCartas) {
-                tempoDecorrido += contador;
-                console.log(contador);
-                restartProgressBarVisual();
-                timeDisplay.classList.remove("alerta");
-        
-                const cartasComMatch = Array.from(document.querySelectorAll(".carta.virada"))
-                    .filter(carta => !carta.onclick && !carta._listeners);
-        
-                const cartasSemMatch = Array.from(document.querySelectorAll(".carta"))
-                    .filter(carta => !carta.classList.contains("virada") || carta.onclick || carta._listeners);
-        
-                cartasSemMatch.forEach(carta => {
+            // Reinicia só o visual
+            contador = 0;
+            restartProgressBarVisual(); 
+            timeDisplay.value = 0;
+            timeDisplay.classList.remove("alerta");
+
+            // Virar cartas temporariamente (para mostrar todas)
+            const todasCartas = Array.from(document.querySelectorAll(".carta"));
+            const cartasNaoBloqueadas = todasCartas.filter(carta => !carta.classList.contains("bloqueada"));
+
+            cartasNaoBloqueadas.forEach(carta => {
+                const code = carta.dataset.country;
+                const match = faces.find(f => f.code === code);
+                if (match) {
                     carta.classList.add("virada");
-                    const code = carta.dataset.country;
-                    const match = faces.find(f => f.code === code);
-                    if (match) carta.style.backgroundImage = `url(${match.img})`;
-                });
-        
-                scrambleAfterTime
-        
-                setTimeout(() => {
-                    cartasSemMatch.forEach(carta => {
-                        carta.classList.remove("virada");
-                        carta.style.backgroundImage = "url('images/download.png')";
-                    });
-                }, 1000);
-            }
+                    carta.style.backgroundImage = `url(${match.img})`;
+                }
+            });
+
+            // Embaralhar e esconder novamente
+            setTimeout(() => {
+                scrambleAfterTime();
+            }, 1000);
         }
     }, 1000);
 }
-
-
 
 /* ------------------------------------------------------------------------------------------------  
  ** /!\ NÃO MODIFICAR ESTAS FUNÇÕES /!\
