@@ -142,14 +142,26 @@ function hideAllCards() {
 // baralha as cartas no tabuleiro
 function scramble() {
     const tabuleiro = document.querySelector("#tabuleiro");
-    let cartas = Array.from(tabuleiro.children); // pega todas as cartas do tabuleiro
+    let cartas = Array.from(tabuleiro.children); // Pega todas as cartas do tabuleiro
 
-    // Embaralha todas as cartas, independentemente do estado
-    cartas.sort(() => Math.random() - 0.5);
+    // Filtra as cartas que não foram viradas ou não possuem um par correto
+    let cartasNaoCorrespondidas = cartas.filter(carta => !carta.classList.contains("virada"));
 
-    // Reanexa as cartas ao tabuleiro na nova ordem
-    cartas.forEach(carta => tabuleiro.appendChild(carta));
+    // Embaralha as cartas não correspondidas
+    cartasNaoCorrespondidas.sort(() => Math.random() - 0.5);
+
+    // Agora vamos colocar as cartas embaralhadas de volta no tabuleiro, mas deixando as cartas já combinadas no seu lugar
+    let index = 0;
+    cartas.forEach(carta => {
+        if (!carta.classList.contains("virada")) {
+            // Reposiciona as cartas não correspondidas
+            tabuleiro.appendChild(cartasNaoCorrespondidas[index]);
+            index++;
+        }
+    });
 }
+
+
 
 
 
