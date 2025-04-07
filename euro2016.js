@@ -159,7 +159,7 @@ function scrambleInitial() {
 let isScrambling = false;
 // Scramble após os 45 segundos
 function scrambleAfterTime() {
-    if (isScrambling) return; // Impede embaralhamentos simultâneos
+    if (isScrambling) return; // Impede baralhamentos simultâneos
     isScrambling = true;
 
     const tabuleiro = document.querySelector("#tabuleiro");
@@ -173,14 +173,14 @@ function scrambleAfterTime() {
         if (carta.classList.contains("bloqueada")) {
             novaOrdem[index] = carta; // Mantém carta bloqueada na mesma posição
         } else {
-            cartasNaoBloqueadas.push(carta); // Para embaralhar
+            cartasNaoBloqueadas.push(carta); // Para baralhar
         }
     });
 
     // Embaralha cartas não bloqueadas
     cartasNaoBloqueadas.sort(() => Math.random() - 0.5);
 
-    // Preenche posições vazias com cartas embaralhadas
+    // Preenche posições vazias com cartas baralhadas
     let indexEmbaralhada = 0;
     for (let i = 0; i < novaOrdem.length; i++) {
         if (!novaOrdem[i]) {
