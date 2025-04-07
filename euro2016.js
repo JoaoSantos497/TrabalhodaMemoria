@@ -273,20 +273,6 @@ function restartGame() {
     }, 2000); // Espera 2 segundos para mostrar as cartas inicialmente
 }
 
-// Após os 45 segundos, se não terminou, embaralha apenas as cartas não combinadas
-/*function handleEndOfTime() {
-    // Verifica se o jogo ainda não terminou e embaralha apenas as cartas não combinadas
-    const cartasViradas = document.querySelectorAll(".carta.virada").length;
-    const totalCartas = document.querySelectorAll(".carta").length;
-
-    if (cartasViradas < totalCartas) {
-        scrambleAfterTime(); // Embaralha as cartas não combinadas
-        // Reinicia o temporizador
-        clearInterval(timeHandler);
-        startTimer();
-    }
-}*/
-
 function resetSelection() {
     firstCard = null;
     secondCard = null;
