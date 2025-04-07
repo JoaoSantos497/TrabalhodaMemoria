@@ -28,10 +28,9 @@ let secondCard = null;
 let flip = true;
 let matchPairsFound = false;
 let timeHandler;  
-let tempo = 0;
 let tempoDecorrido = 0;
 let contador = 0;  // Inicializa o contador com 0
-const maxCount = 45;  // Define o limite de 45 segundos
+const maxCount = 46;  // Define o limite de 45 segundos
 let tempoInicial = Date.now();
 
 
@@ -200,6 +199,8 @@ function restartGame() {
     // Reset das variáveis do jogo
     firstCard = null;
     secondCard = null;
+    tempoDecorrido = 0;
+    contador = 0;
 
     createCountries();     // Cria novas cartas
     showAllCards();        // Mostra as cartas inicialmente
@@ -211,10 +212,9 @@ function restartGame() {
         setTimeout(() => {
             hideAllCards();   
             startTimer();     
-        }, 1000); // Delay para mostrar a nova posição das cartas
-    }, 3000); // Tempo para o jogador ver todas as cartas
+        }, 1500); // Delay para mostrar a nova posição das cartas
+    }, 2500); // Tempo para o jogador ver todas as cartas
 }
-
 
 function resetSelection() {
     firstCard = null;
@@ -335,8 +335,7 @@ function showModal(message = "Parabéns! Ganhaste o jogo!") {
 
     // Só adiciona tempo se a mensagem ainda não contiver "segundo"
     if (!message.includes("segundo")) {
-        let tempoFinal = Date.now();
-        let segundosDecorridos = Math.floor((tempoFinal - tempoInicial) / 1000);
+        let segundosDecorridos = tempoDecorrido + contador;
         message += `\nTempo: ${segundosDecorridos} segundos`;
     }
 
@@ -345,12 +344,14 @@ function showModal(message = "Parabéns! Ganhaste o jogo!") {
     setTimeout(() => modal.classList.add("show"), 10);
 }
 
+
+
 // Barra de Progresso
 function ProgressBar() {
     const barra = document.createElement("progress");
     barra.id = "time";
     barra.max = 45;  
-    barra.value = 0; 
+    barra.value = 1; 
     document.body.appendChild(barra);
 }
 
@@ -375,8 +376,8 @@ function startTimer() {
     timeDisplay.value = 0;
 
     timeHandler = setInterval(() => {
-        contador++;
-        updateProgressBar(contador);
+       contador++;
+        updateProgressBar(contador); 
 
         if (contador >= maxCount - 5) {
             timeDisplay.classList.add("alerta");
@@ -385,11 +386,13 @@ function startTimer() {
         }
 
         if (contador >= maxCount) {
+
             const cartasViradas = document.querySelectorAll(".carta.virada").length;
             const totalCartas = document.querySelectorAll(".carta").length;
         
             if (cartasViradas !== totalCartas) {
                 tempoDecorrido += contador;
+                console.log(contador);
                 restartProgressBarVisual();
                 timeDisplay.classList.remove("alerta");
         
