@@ -28,9 +28,11 @@ let secondCard = null;
 let flip = true;
 let matchPairsFound = false;
 let timeHandler;  
-//let matchPairs = 0;
 let tempo = 0;
 let tempoDecorrido = 0;
+let contador = 0;  // Inicializa o contador com 0
+const maxCount = 45;  // Define o limite de 45 segundos
+
 
 // Array que armazena objectos face que contem posicionamentos da imagem e codigos dos paises
 
@@ -56,19 +58,24 @@ function init() {
 
     clearInterval(timeHandler); // Resetar o tempo se necessário
 	setupAudio(); 		// configurar o audio
-	//getFaces(); 		// calcular as faces e guardar no array faces
 	createCountries();	// criar países
-	//game.sounds.background.play(); //Background Music
-    showAllCards();
+	game.sounds.background.loop = true;
+	game.sounds.background.play();
+
+    showAllCards(); // Mostrar todas as cartas imediatamente
+
     setTimeout(() => {
-        scramble();
-        hideAllCards();
-        startTimer();
-        //game.sounds.background.loop = true;
-        //game.sounds.background.play();
-    }, 2000);
+        scramble();         // Baralha as cartas enquanto estão viradas
+        setTimeout(() => {
+            hideAllCards();    // Depois de baralhar, esconde as cartas
+            startTimer();      // Inicia o temporizador só depois de esconder
+        }, 1000); // Pequeno delay para garantir que o baralhamento é visível
+    }, 2000); // Tempo de visualização inicial das cartas
+
     ProgressBar();
+    updateProgressBar(contador);
 }
+
 
 function setupBoard() {
     let mixedFaces = [...faces, ...faces];
@@ -131,12 +138,17 @@ function hideAllCards() {
     });
 }
 
+
 // baralha as cartas no tabuleiro
 function scramble() {
     let tabuleiro = document.querySelector("#tabuleiro");
-    let cartas = Array.from(tabuleiro.children);
-    cartas.sort(() => Math.random() - 0.5);
-    tabuleiro.innerHTML = "";
+    let cartas = Array.from(tabuleiro.children); // Pega todas as cartas
+
+    // Baralha apenas as cartas não viradas
+    cartas = cartas.filter(carta => carta.classList.contains("virada"));
+    cartas.sort(() => Math.random() - 0.5); // Baralha as cartas aleatoriamente
+
+    // Re-adiciona as cartas baralhadas ao tabuleiro
     cartas.forEach(carta => tabuleiro.appendChild(carta));
 }
 
@@ -182,17 +194,24 @@ function matchPairs() {
     }
 }
 
+// REINICIAR O JOGO
 function restartGame() {
+    // Reset das variáveis do jogo
     firstCard = null;
     secondCard = null;
-    createCountries();
-    showAllCards();
+
+    createCountries(); // Cria novas cartas
+    showAllCards();    // Mostra as cartas inicialmente
+
     setTimeout(() => {
-        scramble();
-        hideAllCards();
-        startTimer();
-    }, 2000);
+        scramble();    // Baralha as cartas viradas
+        setTimeout(() => {
+            hideAllCards(); // Esconde após baralhar
+            startTimer();   // Começa o temporizador só depois
+        }, 300); // Delay curto após baralhar
+    }, 2000); // Tempo para ver todas as cartas antes do jogo começar
 }
+
 
 
 function resetSelection() {
@@ -210,6 +229,7 @@ function checkWin() {
         showModal();
     }
 }
+
 // Style do Modal
 const style = document.createElement("style");
 style.innerHTML = `
@@ -290,13 +310,13 @@ function createModalStructure() {
     modal.appendChild(content);
     document.body.appendChild(modal);
 
-    // Evento fechar
+    // Evento de fechar o modal
     closeBtn.addEventListener("click", () => {
-        modal.classList.remove("show");
+        modal.classList.remove("show"); // Remove a classe para esconder o modal
         setTimeout(() => {
-            modal.style.display = "none";
-            restartGame();
-        }, 300); // tempo para animação
+            modal.style.display = "none"; // Remove o modal do DOM após a animação
+            restartGame(); // Reinicia o jogo após o fechamento
+        }, 300); // Tempo para animação
     });
 }
 
@@ -311,56 +331,77 @@ function showModal(message = "Parabéns! Ganhaste o jogo!") {
     }
 
     document.getElementById("modalMessage").innerText = message;
-    modal.style.display = "flex";
-    setTimeout(() => modal.classList.add("show"), 10); // trigger da animação
+    modal.style.display = "flex"; // Exibe o modal
+    setTimeout(() => modal.classList.add("show"), 10); // Trigger da animação
 }
+
 
 
 // Barra de Progresso
 function ProgressBar() {
     const barra = document.createElement("progress");
     barra.id = "time";
-    barra.max = 45;
-    barra.value = 0;
+    barra.max = 100;  // Valor máximo agora é 100 para percentagem
+    barra.value = 0;  // Inicializa com valor 0
     document.body.appendChild(barra);
 }
 
+
+// Update da Progress Bar
+function updateProgressBar(segundos) {
+    const progressBar = document.getElementById("time"); // Corrige o ID da barra
+    const percent = Math.min((segundos / 45) * 100, 100); // Calcula o percentual de preenchimento
+    progressBar.value = percent; // Atualiza o valor da barra de progresso
+}
+
+
+
+// Contador de Tempo
 // Contador de Tempo
 function startTimer() {
-    let contador = 0;
-    let maxCount = 45;
     let timeDisplay = document.getElementById("time");
 
-    clearInterval(timeHandler);
-    timeDisplay.value = contador;
-    timeDisplay.classList.remove("alerta");
+    // Limpar o intervalo anterior
+    clearInterval(timeHandler); 
+
+    // Reseta o contador
+    contador = 0;
+    timeDisplay.value = 0; // Inicializa a barra de progresso
 
     timeHandler = setInterval(() => {
-        contador++;
-        timeDisplay.value = contador;
+        contador++; // Incrementa o contador a cada segundo
+        timeDisplay.value = (contador / maxCount) * 100; // Atualiza o valor da barra de progresso
 
+        // Atualiza a classe de alerta nos últimos 5 segundos
         if (contador >= maxCount - 5) {
             timeDisplay.classList.add("alerta");
+        } else {
+            timeDisplay.classList.remove("alerta");
         }
 
+        // Ao atingir o limite de 45 segundos
         if (contador >= maxCount) {
-            clearInterval(timeHandler);
-            timeDisplay.value = 0;
-            timeDisplay.classList.remove("alerta");
+            clearInterval(timeHandler); // Para o temporizador
+            timeDisplay.value = 0; // Reseta a barra
+            timeDisplay.classList.remove("alerta"); // Remove o alerta
 
+            // Baralha as cartas não viradas
             scramble();
 
+            // Resetar as cartas não viradas
             document.querySelectorAll(".carta").forEach(carta => {
                 if (!carta.classList.contains("virada")) {
                     carta.style.backgroundImage = "url('images/download.png')";
-                    setTimeout(() => carta.classList.remove("virada"), 1000);
+                    setTimeout(() => carta.classList.remove("virada"), 1000); // Remove a classe "virada"
                 }
             });
 
-            startTimer();
+            startTimer(); // Reinicia o temporizador
         }
-    }, 1000);
+    }, 1000); // A cada 1 segundo
 }
+
+
 
 
 

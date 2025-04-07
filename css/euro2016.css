@@ -122,7 +122,7 @@ body {
     background-color: #1E7179;
 }
 
-/* TEMPO */
+/* Temporizador */
 #time {
     position: fixed;
     bottom: 0px;
@@ -139,13 +139,13 @@ body {
 }
 
 #time::-webkit-progress-value {
-    background-color: blue;
+    background-color: green;
     transition: background-color 0.3s ease;
 }
 
 #time.alerta::-webkit-progress-value {
     background-color: red;
-    animation: piscar 1s infinite;
+    transition: background-color 0.5s ease;
 }
 
 @keyframes piscar {
@@ -155,16 +155,3 @@ body {
 }
 
 
-/* classe que anima a progress bar quando é adicionada à sua lista de classes 
-.warning {
-    animation: wa alternate 1s infinite;
-}
-
-@keyframes wa {
-    from {
-        background-color: blue;
-    }
-    to {
-        background-color: red;
-    }
-}*/
