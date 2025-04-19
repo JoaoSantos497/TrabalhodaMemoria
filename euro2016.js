@@ -8,10 +8,10 @@ const game = {}; // encapsula a informação de jogo. Está vazio mas vai-se pre
 
 // sons do jogo
 const sounds = {
-	background: null,
-	flip: null,
-	success: null,
-	hide: null
+	background: new Audio ('sounds/background.mp3'),
+    flip: new Audio ('sounds/flip.mp3'),
+    success: new Audio ('sounds/success.mp3'),
+    hide: new Audio ('sounds/hide.mp3')
 };
 
 // numero de linhas e colunas do tabuleiro;
@@ -22,13 +22,15 @@ game.sounds = sounds; // Adicionar os sons sons do jogo ao objeto game.
 //const board = Array(ROWS).fill().map(() => Array(COLS).fill(null)); // criação do tabuleiro como um array de 4 linhas x 8 colunas
 
 const CARDSIZE = 102; 
+
 let firstCard = null;
 let secondCard = null;
 let flip = true;
 let matchPairsFound = false;
 let timeHandler;  
 let tempoDecorrido = 0;
-let contador = 0;  // Inicializa o contador com 0
+let contador = 0;  
+
 const maxCount = 46;  // Define o limite de 45 segundos
 let tempoInicial = Date.now();
 
